@@ -73,8 +73,27 @@ class YouTubeTranscriberServer {
       return {
         tools: [
           {
+            name: "transcribe_youtube",
+            description: "Process natural language commands to transcribe YouTube videos. Handles commands like 'transcribe this url: [YouTube URL]' or 'add this video: [URL]'",
+            inputSchema: {
+              type: "object",
+              properties: {
+                command: {
+                  type: "string",
+                  description: "Natural language command containing YouTube URL (e.g., 'transcribe this url: https://youtube.com/watch?v=...')",
+                },
+                language: {
+                  type: "string",
+                  description: "Preferred transcript language (e.g., 'en', 'es'). Optional.",
+                  default: "en",
+                },
+              },
+              required: ["command"],
+            },
+          },
+          {
             name: "add_youtube_video",
-            description: "Add a YouTube video and extract its transcript for searching",
+            description: "Add a YouTube video and extract its transcript for searching (direct URL input)",
             inputSchema: {
               type: "object",
               properties: {
@@ -172,6 +191,8 @@ class YouTubeTranscriberServer {
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       try {
         switch (request.params.name) {
+          case "transcribe_youtube":
+            return await this.transcribeFromCommand(request.params.arguments);
           case "add_youtube_video":
             return await this.addYouTubeVideo(request.params.arguments);
           case "search_transcripts":
@@ -195,6 +216,23 @@ class YouTubeTranscriberServer {
         };
       }
     });
+  }
+
+  private extractUrlFromCommand(command: string): string | null {
+    // Extract URLs from natural language commands
+    const urlPatterns = [
+      // Match YouTube URLs with or without timestamps
+      /https?:\/\/(?:www\.|m\.)?(?:youtube\.com\/watch\?[^\s]*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})[^\s]*/g,
+      /youtube\.com\/watch\?[^\s]*v=([a-zA-Z0-9_-]{11})[^\s]*/g,
+      /youtu\.be\/([a-zA-Z0-9_-]{11})[^\s]*/g,
+    ];
+
+    for (const pattern of urlPatterns) {
+      const match = command.match(pattern);
+      if (match) return match[0];
+    }
+
+    return null;
   }
 
   private extractVideoId(url: string): string | null {
@@ -254,13 +292,38 @@ class YouTubeTranscriberServer {
     return results;
   }
 
+  private async transcribeFromCommand(args: any): Promise<CallToolResult> {
+    const { command, language = "en" } = args;
+
+    // Extract URL from the natural language command
+    const extractedUrl = this.extractUrlFromCommand(command);
+    if (!extractedUrl) {
+      return {
+        content: [{ type: "text", text: `Error: Could not find a YouTube URL in the command: "${command}"
+
+Please include a YouTube URL in your command, for example:
+- "transcribe this url: https://www.youtube.com/watch?v=P2DfG5JEAmA"
+- "add this video: https://youtu.be/P2DfG5JEAmA"` }],
+      };
+    }
+
+    // Use the existing addYouTubeVideo logic
+    return await this.addYouTubeVideo({ url: extractedUrl, language });
+  }
+
   private async addYouTubeVideo(args: any): Promise<CallToolResult> {
     const { url, language = "en" } = args;
 
     const videoId = this.extractVideoId(url);
     if (!videoId) {
       return {
-        content: [{ type: "text", text: `Error: Could not extract video ID from URL: ${url}` }],
+        content: [{ type: "text", text: `Error: Could not extract video ID from URL: ${url}
+
+Supported URL formats:
+- https://www.youtube.com/watch?v=VIDEO_ID
+- https://youtu.be/VIDEO_ID
+- https://www.youtube.com/watch?v=VIDEO_ID&t=123s
+- VIDEO_ID (11 characters)` }],
       };
     }
 

@@ -4,7 +4,8 @@ A Model Context Protocol (MCP) server that extracts transcripts from YouTube vid
 
 ## 🚀 Features
 
-- 🎥 **Add YouTube videos** by URL or video ID
+- 🗣️ **Natural Language Commands** - Use commands like "transcribe this url: [YouTube URL]"
+- 🎥 **Add YouTube videos** by URL or video ID (supports timestamped URLs)
 - 🔍 **Search across multiple transcripts** simultaneously
 - ⏰ **Contextual results** with timestamps and surrounding text
 - 📝 **Full transcript access** in multiple formats
@@ -51,7 +52,14 @@ Restart Claude Desktop to load the MCP server.
 
 ## 📋 Usage Examples
 
-### Adding Videos
+### Natural Language Commands (Recommended)
+```
+transcribe this url: https://www.youtube.com/watch?v=P2DfG5JEAmA&t=447s
+add this video: https://youtu.be/dQw4w9WgXcQ
+please transcribe: https://www.youtube.com/watch?v=example
+```
+
+### Direct Video Management  
 ```
 Add this YouTube video: https://www.youtube.com/watch?v=dQw4w9WgXcQ
 ```
@@ -73,7 +81,8 @@ Clear all loaded videos
 
 | Tool | Description |
 |------|-------------|
-| add_youtube_video | Add a YouTube video and extract its transcript |
+| **transcribe_youtube** | **Process natural language commands to transcribe YouTube videos** |
+| add_youtube_video | Add a YouTube video and extract its transcript (direct URL input) |
 | search_transcripts | Search for text across all loaded transcripts |
 | list_videos | List all loaded videos with basic information |
 | get_video_transcript | Get the full transcript of a specific video |
