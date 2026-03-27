@@ -1,0 +1,48 @@
+{
+  "name": "yt-mcp",
+  "version": "2.0.0",
+  "description": "Enhanced YouTube Transcriber MCP Server — dual-engine transcription (captions + ElevenLabs Scribe), speaker diarization, persistence.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "yt-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "youtube",
+    "transcript",
+    "elevenlabs",
+    "scribe",
+    "claude"
+  ],
+  "author": "earl562",
+  "license": "MIT",
+  "dependencies": {
+    "@elevenlabs/client": "latest",
+    "@modelcontextprotocol/sdk": "^1.28.0",
+    "dotenv": "^16.0.0",
+    "youtube-transcript": "^1.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/earl562/yt-mcp.git"
+  }
+}
